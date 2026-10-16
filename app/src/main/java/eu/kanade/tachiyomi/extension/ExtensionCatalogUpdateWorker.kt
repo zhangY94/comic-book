@@ -10,12 +10,23 @@ import androidx.work.WorkerParameters
 import eu.kanade.tachiyomi.util.system.workManager
 import mihon.app.di.appGraph
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.cancellation.CancellationException
 
 /** Refreshes only the extension stores that the user has added on this device. */
 class ExtensionCatalogUpdateWorker(context: Context, parameters: WorkerParameters) :
     CoroutineWorker(context, parameters) {
 
     override suspend fun doWork(): Result {
+        if (applicationContext.appGraph.sourcePreferences.aggregateIndexUrl.get().isNotBlank()) {
+            return try {
+                AggregateCatalog.synchronize(applicationContext)
+                Result.success()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                Result.retry()
+            }
+        }
         applicationContext.appGraph.extensionManager.checkForUpdates()
         return Result.success()
     }

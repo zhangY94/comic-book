@@ -37,8 +37,8 @@ android {
     defaultConfig {
         applicationId = "io.github.zhangy94.comicbook"
 
-        versionCode = 39
-        versionName = "0.21.2-comic.1"
+        versionCode = 40
+        versionName = "0.21.2-comic.2"
 
         buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
         buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
@@ -325,6 +325,8 @@ dependencies {
 
     // Tests
     testImplementation(libs.bundles.test)
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.uiautomator)
     testRuntimeOnly(libs.junit.platform.launcher)
 
     // For detecting memory leaks; see https://square.github.io/leakcanary/

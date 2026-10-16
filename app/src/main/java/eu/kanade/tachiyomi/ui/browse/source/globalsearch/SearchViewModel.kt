@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.AggregateCatalogPolicy
 import eu.kanade.tachiyomi.source.Source
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,6 +20,8 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.core.common.preference.toggle
@@ -48,11 +51,13 @@ abstract class SearchViewModel(
     }
 
     private val coroutineDispatcher = Dispatchers.IO.limitedParallelism(5)
+    private val searchPermits = Semaphore(5)
     private var searchJob: Job? = null
 
     private val enabledLanguages = sourcePreferences.enabledLanguages.get()
     private val disabledSources = sourcePreferences.disabledSources.get()
     protected val pinnedSources = sourcePreferences.pinnedSources.get()
+    private val aggregatePackages = sourcePreferences.aggregateManagedPackages.get()
 
     private var lastQuery: String? = null
     private var lastSourceFilter: SourceFilter? = null
@@ -106,7 +111,7 @@ abstract class SearchViewModel(
         }
 
         return extensionManager.getLoadedExtensions()
-            .filter { it.pkgName == filter }
+            .filter { if (filter == AggregateCatalogPolicy.SEARCH_FILTER) it.pkgName in aggregatePackages else it.pkgName == filter }
             .flatMap { it.sources }
             .filter { it in enabledSources }
     }
@@ -163,7 +168,11 @@ abstract class SearchViewModel(
 
                     try {
                         val page = withContext(coroutineDispatcher) {
-                            source.getSearchManga(1, query, source.getFilterList())
+                            searchPermits.withPermit {
+                                kotlinx.coroutines.withTimeout(25_000) {
+                                    source.getSearchManga(1, query, source.getFilterList())
+                                }
+                            }
                         }
 
                         val titles = page.mangas

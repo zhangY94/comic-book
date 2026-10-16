@@ -14,6 +14,7 @@ import eu.kanade.presentation.browse.GlobalSearchScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
+import eu.kanade.tachiyomi.extension.AggregateCatalogPolicy
 import tachiyomi.presentation.core.screens.LoadingScreen
 
 class GlobalSearchScreen(
@@ -54,6 +55,7 @@ class GlobalSearchScreen(
             }
         } else {
             GlobalSearchScreen(
+                aggregateMode = extensionFilter == AggregateCatalogPolicy.SEARCH_FILTER,
                 state = state,
                 navigateUp = navigator::pop,
                 onChangeSearchQuery = viewModel::updateSearchQuery,

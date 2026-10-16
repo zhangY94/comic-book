@@ -30,6 +30,7 @@ fun GlobalSearchScreen(
     onClickSource: (Source) -> Unit,
     onClickItem: (Manga) -> Unit,
     onLongClickItem: (Manga) -> Unit,
+    aggregateMode: Boolean = false,
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
@@ -40,12 +41,13 @@ fun GlobalSearchScreen(
                 navigateUp = navigateUp,
                 onChangeSearchQuery = onChangeSearchQuery,
                 onSearch = onSearch,
-                hideSourceFilter = false,
+                hideSourceFilter = aggregateMode,
                 sourceFilter = state.sourceFilter,
                 onChangeSearchFilter = onChangeSearchFilter,
                 onlyShowHasResults = state.onlyShowHasResults,
                 onToggleResults = onToggleResults,
                 scrollBehavior = scrollBehavior,
+                aggregateMode = aggregateMode,
             )
         },
     ) { paddingValues ->

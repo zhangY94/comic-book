@@ -47,6 +47,7 @@ fun GlobalSearchToolbar(
     onlyShowHasResults: Boolean,
     onToggleResults: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    aggregateMode: Boolean = false,
 ) {
     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
         Box {
@@ -128,6 +129,13 @@ fun GlobalSearchToolbar(
             )
         }
 
+        if (aggregateMode) {
+            Text(
+                text = "聚合搜索 · $progress/$total 个来源",
+                modifier = Modifier.padding(horizontal = MaterialTheme.padding.small),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
         HorizontalDivider()
     }
 }

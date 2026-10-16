@@ -159,6 +159,8 @@ class ExtensionManager(
      * again, so one can move between loaded and not loaded in either direction, while extensions
      * that still pass keep the instances they already had.
      */
+    suspend fun reloadCatalogSources() = loadExtensions()
+
     private suspend fun loadExtensions() = loadMutex.withLock {
         try {
             val extensions = ExtensionLoader.loadExtensions(context, loadedExtensionMapFlow.value)

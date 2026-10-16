@@ -20,6 +20,11 @@ class SourcePreferences(
     preferenceStore: PreferenceStore,
 ) {
 
+    val aggregateIndexUrl = preferenceStore.getString("comic_aggregate_index", "")
+    val aggregateSigningKey = preferenceStore.getString("comic_aggregate_signing_key", "")
+    val aggregateLastSync = preferenceStore.getLong("comic_aggregate_last_sync", 0L)
+    val aggregateManagedPackages = preferenceStore.getStringSet("comic_aggregate_packages", emptySet())
+
     val sourceDisplayMode: Preference<LibraryDisplayMode> = preferenceStore.getObjectFromString(
         "pref_display_mode_catalogue",
         LibraryDisplayMode.default,

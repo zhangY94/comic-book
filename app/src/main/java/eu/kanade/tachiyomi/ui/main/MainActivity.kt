@@ -313,7 +313,6 @@ class MainActivity : BaseActivity() {
                 if (!isBenchmarkBuildType) {
                     if (isLaunch) CheckForUpdates()
                     ShowOnboarding()
-                    ShowDonationCampaign()
                 }
             }
         }
@@ -409,7 +408,9 @@ class MainActivity : BaseActivity() {
         LaunchedEffect(Unit) {
             ExtensionCatalogUpdateWorker.schedule(this@MainActivity)
             try {
-                extensionManager.checkForUpdates()
+                if (context.appGraph.sourcePreferences.aggregateIndexUrl.get().isBlank()) {
+                    extensionManager.checkForUpdates()
+                }
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
             }
@@ -418,12 +419,9 @@ class MainActivity : BaseActivity() {
 
     @Composable
     private fun ShowOnboarding() {
-        val navigator = LocalNavigator.currentOrThrow
-
         LaunchedEffect(Unit) {
-            if (!preferences.shownOnboardingFlow.get() && navigator.lastItem !is OnboardingScreen) {
-                navigator.push(OnboardingScreen())
-            }
+            // Subscription setup lives on the home screen; storage can be configured when needed.
+            preferences.shownOnboardingFlow.set(true)
         }
     }
 
