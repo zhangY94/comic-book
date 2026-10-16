@@ -79,17 +79,22 @@ jobs:
         run: |
           if [ -z "$TEST_CATALOG" ]; then exit 0; fi
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/aggregate-avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           mkdir -p smoke-results
           trap 'cp "$RUNNER_TEMP/emulator.log" smoke-results/emulator.log 2>/dev/null || true' EXIT
           sdkmanager 'emulator' 'system-images;android-35;google_apis;x86_64' >/dev/null
           echo no | avdmanager create avd --force -n aggregate-test -k 'system-images;android-35;google_apis;x86_64'
           sudo chmod 666 /dev/kvm
           "$ANDROID_HOME/emulator/emulator" -avd aggregate-test -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$RUNNER_TEMP/emulator.log" 2>&1 &
-          adb wait-for-device
+          emulator_pid=$!
+          timeout 180 adb wait-for-device || { cat "$RUNNER_TEMP/emulator.log"; exit 1; }
           for i in $(seq 1 120); do
             if adb shell getprop sys.boot_completed | grep -q 1; then break; fi
             sleep 2
           done
+          kill -0 "$emulator_pid"
+          adb shell getprop sys.boot_completed | grep -q 1
           adb shell input keyevent 82
           adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
           adb install app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
