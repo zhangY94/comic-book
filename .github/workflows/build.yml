@@ -82,7 +82,12 @@ jobs:
           export ANDROID_AVD_HOME="$RUNNER_TEMP/aggregate-avd"
           mkdir -p "$ANDROID_AVD_HOME"
           mkdir -p smoke-results
-          trap 'cp "$RUNNER_TEMP/emulator.log" smoke-results/emulator.log 2>/dev/null || true' EXIT
+          collect_diagnostics() {
+            cp "$RUNNER_TEMP/emulator.log" smoke-results/emulator.log 2>/dev/null || true
+            adb logcat -d -s AndroidRuntime:E > "$RUNNER_TEMP/android-crash.txt" 2>/dev/null || true
+            python3 -c 'import os,pathlib; p=pathlib.Path(os.environ["RUNNER_TEMP"])/"android-crash.txt"; text=p.read_text(errors="replace").replace(os.environ["TEST_CATALOG"],"[runtime subscription]"); pathlib.Path("smoke-results/crash-log.txt").write_text(text); print(text)'
+          }
+          trap collect_diagnostics EXIT
           sdkmanager 'emulator' 'system-images;android-35;google_apis;x86_64' >/dev/null
           echo no | avdmanager create avd --force -n aggregate-test -k 'system-images;android-35;google_apis;x86_64'
           sudo chmod 666 /dev/kvm
@@ -102,7 +107,6 @@ jobs:
           grep -q 'OK (1 test)' "$RUNNER_TEMP/aggregate-test.txt"
           mkdir -p smoke-results
           adb pull /sdcard/Android/data/io.github.zhangy94.comicbook.dev/files/aggregate-smoke/. smoke-results/
-          adb logcat -d -s AndroidRuntime:E > smoke-results/crash-log.txt
       - name: Upload Android verification screenshots
         if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
