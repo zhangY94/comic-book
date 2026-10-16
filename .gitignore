@@ -13,5 +13,17 @@ build
 keystore.properties
 local.properties
 
+# Deployment and private runtime data never belong in this public repository.
+.secrets/
+private/
+*.keystore
+*.jks
+*.p12
+.env
+.env.*
+*.pem
+*.key
+*.local.json
+
 # macOS specific files
 .DS_Store

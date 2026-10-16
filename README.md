@@ -1,86 +1,27 @@
-<div align="center">
+# Comic Book
 
-<a href="https://mihon.app">
-    <img src="./.github/assets/logo.png" alt="Mihon logo" title="Mihon logo" width="80"/>
-</a>
+基于 [Mihon](https://github.com/mihonapp/mihon) v0.21.2 的个人 Android 漫画阅读器分支。Android 8.0 及以上。
 
-# Mihon [App](#)
+本分支使用独立包名，可与原版共存；保留书架、中文界面、翻页/条漫、离线下载和备份。默认不编入遥测组件，关闭原版 APK 自动更新检查。未添加广告 SDK。
 
-### Full-featured reader
-Discover and read manga, webtoons, comics, and more – easier than ever on your Android device.
+## 源与更新
 
-[![Discord server](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/mihon)
-[![GitHub downloads](https://img.shields.io/github/downloads/mihonapp/mihon/total?label=downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://mihon.app/download)
+在「更多 → 设置 → 浏览 → 扩展仓库」中填写自己的仓库地址，随后在扩展页选择并安装需要的源。服务器地址、源清单和账号信息只通过运行时输入保存于设备，不包含在本仓库或 APK 的默认配置中。
 
-[![CI](https://img.shields.io/github/actions/workflow/status/mihonapp/mihon/build.yml?labelColor=27303D)](https://github.com/mihonapp/mihon/actions/workflows/build_push.yml)
-[![License: Apache-2.0](https://img.shields.io/github/license/mihonapp/mihon?labelColor=27303D&color=0877d2)](/LICENSE)
-[![Translation status](https://img.shields.io/weblate/progress/mihon?labelColor=27303D&color=946300)](https://hosted.weblate.org/engage/mihon/)
+应用启动时检查源插件更新，并通过 Android WorkManager 每 24 小时进行一次后台检查。后台执行时间受 Android 省电策略影响；有更新时使用现有通知和扩展管理界面提示，安装仍受 Android 权限限制。需要允许通知才能收到后台提示。
 
-## Download
+漫画页面由手机通过源插件直接获取。服务器可独立维护扩展仓库，正常更新源无需重新打包此应用。源站改版引起的解析错误需要相应插件修复。
 
-[![Mihon Stable](https://img.shields.io/github/release/mihonapp/mihon.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://mihon.app/download)
-[![Mihon Beta](https://img.shields.io/github/v/release/mihonapp/mihon-preview.svg?maxAge=3600&label=Beta&labelColor=2c2c47&color=1c1c39)](https://mihon.app/download)
+## APK 构建
 
-*Requires Android 8.0 or higher.*
+在 Actions 中运行 **Build APK**。成功后下载 `comic-book-apk` artifact，包含各架构/通用 APK 和 SHA256 校验值。正式使用需从本仓库对应构建下载，不使用 Mihon 原版 APK 覆盖本分支。
 
-## Features
+工作流先检查格式、运行上游单元测试和数据库迁移检查，再构建签名 APK。签名材料通过 GitHub Secrets 提供：`SIGNING_KEY`（PKCS12 的 Base64）、`KEY_STORE_PASSWORD`、`ALIAS`、`KEY_PASSWORD`。这些值不能提交到 Git。每次升级递增 `versionCode`，保持签名密钥和包名不变；签名备份由仓库所有者自行保存在仓库外。
 
-<div align="left">
+服务器部署、定时计划、源仓库配置和个人数据不属于此公开仓库。这里不发布任何个人服务器地址、凭据或源清单。
 
-* Local reading of content.
-* A configurable reader with multiple viewers, reading directions and other settings.
-* Tracker support: [MangaBaka](https://mangabaka.org), [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.app/), [MangaUpdates](https://mangaupdates.com), [Shikimori](https://shikimori.one), [Bangumi](https://bgm.tv/), and [Hikka](https://hikka.io/) support.
-* Categories to organize your library.
-* Light and dark themes.
-* Schedule updating your library for new chapters.
-* Create backups locally to read offline or to your desired cloud service.
-* Plus much more...
+## 上游与许可证
 
-</div>
+基础版本：Mihon v0.21.2（提交 `9612d95`）。修改包括应用标识、默认隐私选项、源目录定期检查与本仓库的构建流程；修改日期 2026-10-16。
 
-## Contributing
-
-[Code of conduct](./CODE_OF_CONDUCT.md) · [Contributing guide](./CONTRIBUTING.md)
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Before reporting a new issue, take a look at the [FAQ](https://mihon.app/docs/faq/general), the [changelog](https://mihon.app/changelogs/) and the already opened [issues](https://github.com/mihonapp/mihon/issues); if you got any questions, join our [Discord server](https://discord.gg/mihon).
-
-
-### Repositories
-
-[![mihonapp/website - GitHub](https://github-stats-extended.vercel.app/api/pin/?username=mihonapp&repo=website&bg_color=161B22&text_color=c9d1d9&title_color=0877d2&icon_color=0877d2&border_radius=8&hide_border=true&description_lines_count=2)](https://github.com/mihonapp/website/)
-[![mihonapp/bitmap.kt - GitHub](https://github-stats-extended.vercel.app/api/pin/?username=mihonapp&repo=bitmap.kt&bg_color=161B22&text_color=c9d1d9&title_color=0877d2&icon_color=0877d2&border_radius=8&hide_border=true&description_lines_count=2)](https://github.com/mihonapp/bitmap.kt/)
-
-### Credits
-
-Thank you to all the people who have contributed!
-
-<a href="https://github.com/mihonapp/mihon/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=mihonapp/mihon" alt="Mihon app contributors" title="Mihon app contributors" width="800"/>
-</a>
-
-### Disclaimer
-
-The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
-
-### License
-
-<pre>
-Copyright © 2015 Javier Tomás
-Copyright © 2024 Mihon Open Source Project
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-</pre>
-
-</div>
+遵循 [Apache License 2.0](LICENSE)，保留原作者版权与声明。[原版 README](README.upstream.md) 提供原项目说明及鸣谢。此分支与 Mihon 官方独立，问题请提交到本仓库。
