@@ -78,7 +78,10 @@ jobs:
         timeout-minutes: 15
         run: |
           if [ -z "$TEST_CATALOG" ]; then exit 0; fi
-          sdkmanager 'system-images;android-35;google_apis;x86_64' >/dev/null
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+          mkdir -p smoke-results
+          trap 'cp "$RUNNER_TEMP/emulator.log" smoke-results/emulator.log 2>/dev/null || true' EXIT
+          sdkmanager 'emulator' 'system-images;android-35;google_apis;x86_64' >/dev/null
           echo no | avdmanager create avd --force -n aggregate-test -k 'system-images;android-35;google_apis;x86_64'
           sudo chmod 666 /dev/kvm
           "$ANDROID_HOME/emulator/emulator" -avd aggregate-test -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$RUNNER_TEMP/emulator.log" 2>&1 &
