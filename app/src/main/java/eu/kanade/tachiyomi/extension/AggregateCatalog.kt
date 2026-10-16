@@ -43,7 +43,7 @@ internal object AggregateCatalog {
             require(available.isNotEmpty()) { "订阅中没有可用的中文图源" }
             require(available.size <= 200) { "订阅图源数量过多" }
             graph.extensionStoreRepository.upsert(store)
-            val managed = preferences.aggregateManagedPackages.get().toMutableSet()
+            val managed = mutableSetOf<String>()
             var failed = 0
             available.forEachIndexed { index, extension ->
                 progress("正在准备图源 ${index + 1}/${available.size}：${extension.name}")
@@ -85,6 +85,10 @@ internal object AggregateCatalog {
                     throw error
                 } catch (_: Exception) {
                     failed++
+                    val existing = ExtensionLoader.getExtensionPackageInfoFromPkgName(context, extension.pkgName)
+                    if (existing != null && ExtensionLoader.getSignatures(existing).orEmpty().any { it.equals(store.signingKey, true) }) {
+                        managed.add(extension.pkgName)
+                    }
                 }
             }
             preferences.enabledLanguages.set(preferences.enabledLanguages.get() + setOf("zh", "zh-Hans", "zh-Hant"))

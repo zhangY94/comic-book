@@ -113,7 +113,7 @@ abstract class SearchViewModel(
         return extensionManager.getLoadedExtensions()
             .filter { if (filter == AggregateCatalogPolicy.SEARCH_FILTER) it.pkgName in aggregatePackages else it.pkgName == filter }
             .flatMap { it.sources }
-            .filter { it in enabledSources }
+            .filter { it in enabledSources && (filter != AggregateCatalogPolicy.SEARCH_FILTER || it.lang.startsWith("zh")) }
     }
 
     fun updateSearchQuery(query: String?) {
