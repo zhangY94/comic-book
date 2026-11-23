@@ -12,6 +12,20 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 
 ## [Unreleased]
 
+## [v0.21.2-comic.3] - 2026-11-23
+### Changed
+- Redesigned the interface with an iOS-like visual system (new palette, grouped lists with hairline separators, softer corner radii); aggregate search, search results and the "我的" tab are rebuilt on it
+- Bottom bar is now 书架 / 搜索 / 历史 / 我的 and starts on the library; the standalone updates tab was removed
+- Library entries that gained new chapters are pinned to the top and marked with a red "更新 N" badge showing how many chapters are available
+- Library header no longer shows a back arrow; a search action opens cross-source search, in-library search moved to the overflow menu
+- "我的" tab trimmed to resume, counters, download queue, categories, tracking, data/storage, settings and about
+
+### Fixed
+- Aggregate search home no longer overlaps the status bar
+
+### Other
+- The on-device aggregate verification is no longer a release gate
+
 ## [v0.21.2] - 2026-10-13
 ### Fixed
 - Fix long floating point numbers showing up in Comick progress ([@MajorTanya](https://github.com/MajorTanya)) ([#4090](https://github.com/mihonapp/mihon/pull/4090))

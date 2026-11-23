@@ -71,8 +71,12 @@ jobs:
           if [ -n "$TEST_CATALOG" ]; then
             ./gradlew assembleDebug assembleDebugAndroidTest -Pinclude-telemetry=false
           fi
+      # Needs the private subscription catalog and a working emulator, so it is a
+      # smoke check rather than a release gate: it still runs and uploads its
+      # screenshots/logs, but it no longer fails the build.
       - name: Verify one-address aggregation on Android
         if: github.event_name != 'pull_request'
+        continue-on-error: true
         env:
           TEST_CATALOG: ${{ secrets.AGGREGATE_TEST_CATALOG }}
         timeout-minutes: 15

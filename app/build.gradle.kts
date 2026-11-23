@@ -37,8 +37,8 @@ android {
     defaultConfig {
         applicationId = "io.github.zhangy94.comicbook"
 
-        versionCode = 40
-        versionName = "0.21.2-comic.2"
+        versionCode = 41
+        versionName = "0.21.2-comic.3"
 
         buildConfigField("boolean", "TELEMETRY_INCLUDED", "${Config.includeTelemetry}")
         buildConfigField("boolean", "UPDATER_ENABLED", "${Config.enableUpdater}")
