@@ -31,6 +31,7 @@ class GlobalSearchScreen(
                 create(initialQuery = searchQuery, initialExtensionFilter = extensionFilter)
             }
         val state by viewModel.state.collectAsState()
+        val chapterPreviews by viewModel.chapterPreviews.collectAsState()
         var showSingleLoadingScreen by remember {
             mutableStateOf(searchQuery.isNotEmpty() && !extensionFilter.isNullOrEmpty() && state.total == 1)
         }
@@ -68,6 +69,8 @@ class GlobalSearchScreen(
                 },
                 onClickItem = { navigator.push(MangaScreen(it.id, true)) },
                 onLongClickItem = { navigator.push(MangaScreen(it.id, true)) },
+                chapterPreviews = chapterPreviews,
+                onRequestChapterPreview = viewModel::requestChapterPreview,
             )
         }
     }

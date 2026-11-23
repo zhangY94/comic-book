@@ -5,10 +5,12 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.produceState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.AggregateCatalogPolicy
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.model.SChapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -23,7 +25,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import mihon.domain.manga.model.toDomainManga
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.cancellation.CancellationException
 import tachiyomi.core.common.preference.toggle
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.interactor.NetworkToLocalManga
@@ -88,6 +93,53 @@ abstract class SearchViewModel(
                 .collectLatest { manga ->
                     value = manga
                 }
+        }
+    }
+
+    private val _chapterPreviews = MutableStateFlow<Map<String, ChapterPreviewState>>(emptyMap())
+
+    /**
+     * Latest chapter of each search result, keyed by [chapterPreviewKey].
+     *
+     * Search results only carry cover/title/source, so the latest chapter has to be fetched from the
+     * source. Requests are made lazily (only for rows the user actually scrolls to), throttled and
+     * cached for the lifetime of this screen.
+     */
+    val chapterPreviews: StateFlow<Map<String, ChapterPreviewState>> = _chapterPreviews
+
+    private val chapterPreviewRequests = ConcurrentHashMap.newKeySet<String>()
+    private val chapterPreviewPermits = Semaphore(3)
+    private val chapterPreviewDispatcher = Dispatchers.IO.limitedParallelism(3)
+
+    fun requestChapterPreview(source: Source, manga: Manga) {
+        val key = chapterPreviewKey(source, manga)
+        if (_chapterPreviews.value.containsKey(key) || !chapterPreviewRequests.add(key)) {
+            return
+        }
+
+        viewModelScope.launch {
+            val preview = try {
+                withContext(chapterPreviewDispatcher) {
+                    chapterPreviewPermits.withPermit {
+                        withTimeout(CHAPTER_PREVIEW_TIMEOUT_MS) {
+                            source.getMangaUpdate(
+                                manga = manga.toSManga(),
+                                chapters = emptyList(),
+                                fetchDetails = false,
+                                fetchChapters = true,
+                            ).chapters.toChapterPreview()
+                        }
+                    }
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                ChapterPreviewState.Unavailable
+            } finally {
+                chapterPreviewRequests.remove(key)
+            }
+
+            _chapterPreviews.update { it + (key to preview) }
         }
     }
 
@@ -245,6 +297,43 @@ abstract class SearchViewModel(
 enum class SourceFilter {
     All,
     PinnedOnly,
+}
+
+private const val CHAPTER_PREVIEW_TIMEOUT_MS = 15_000L
+
+fun chapterPreviewKey(source: Source, manga: Manga): String = "${source.id}:${manga.url}"
+
+sealed interface ChapterPreviewState {
+    data object Unavailable : ChapterPreviewState
+
+    data class Available(val label: String) : ChapterPreviewState
+}
+
+/**
+ * Turns the raw chapter list of a source into a short "latest chapter" label.
+ *
+ * Sources list chapters in different orders and some do not expose recognizable numbers, so prefer
+ * the highest recognized chapter number, then fall back to the newest upload date.
+ */
+private fun List<SChapter>.toChapterPreview(): ChapterPreviewState {
+    if (isEmpty()) return ChapterPreviewState.Unavailable
+
+    val latest = filter { it.chapter_number > 0f }.maxByOrNull { it.chapter_number }
+        ?: maxByOrNull { it.date_upload }
+        ?: return ChapterPreviewState.Unavailable
+
+    val label = latest.name.trim().ifBlank {
+        latest.chapter_number
+            .takeIf { it > 0f }
+            ?.let { number -> "第${number.toString().removeSuffix(".0")}话" }
+            .orEmpty()
+    }
+
+    return if (label.isBlank()) {
+        ChapterPreviewState.Unavailable
+    } else {
+        ChapterPreviewState.Available(label)
+    }
 }
 
 sealed interface SearchItemResult {

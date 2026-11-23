@@ -27,3 +27,6 @@ private/
 
 # macOS specific files
 .DS_Store
+
+# Local agent workspace data
+.workbuddy/

@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Comic Book · UI 风格提案</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --page:#EDEDF2;
+    --bg:#F2F2F7;
+    --card:#FFFFFF;
+    --text:#0A0A0B;
+    --text2:#8A8A8E;
+    --text3:#C6C6CB;
+    --sep:rgba(60,60,67,.16);
+    --fill:rgba(118,118,128,.12);
+    --blue:#007AFF;
+    --nav:rgba(249,249,249,.76);
+    --cardShadow:0 1px 1px rgba(0,0,0,.03), 0 10px 30px -18px rgba(0,0,0,.22);
+    --frame:#15161A;
+    --frameEdge:#33353B;
+  }
+
+  html.dark{
+    --page:#000000;
+    --bg:#000000;
+    --card:#1C1C1E;
+    --text:#FFFFFF;
+    --text2:#8D8D93;
+    --text3:#3A3A3C;
+    --sep:rgba(84,84,88,.55);
+    --fill:rgba(118,118,128,.26);
+    --blue:#0A84FF;
+    --nav:rgba(16,16,18,.74);
+    --cardShadow:none;
+    --frame:#0A0A0C;
+    --frameEdge:#242429;
+  }
+
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:var(--page);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    transition:background .35s ease,color .35s ease;
+    padding:34px 0 80px;
+  }
+
+  /* ---------- page chrome ---------- */
+  .page{max-width:1580px;margin:0 auto;padding:0 40px}
+  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:34px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(160deg,#2B5876,#4E4376);box-shadow:0 8px 18px -10px rgba(43,88,118,.9)}
+  .brand h1{font-size:20px;font-weight:650;letter-spacing:-.2px}
+  .brand h1 span{color:var(--text2);font-weight:500}
+  .brand p{font-size:13px;color:var(--text2);margin-top:3px}
+
+  .switch{display:flex;gap:2px;padding:3px;background:var(--fill);border-radius:11px}
+  .switch button{
+    appearance:none;border:0;background:transparent;color:var(--text2);
+    font-size:13px;font-weight:500;padding:6px 16px;border-radius:8px;cursor:pointer;
+    font-family:inherit;transition:.25s;
+  }
+  .switch button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
+
+  /* ---------- phone frames ---------- */
+  .stage{display:flex;flex-wrap:wrap;gap:46px;justify-content:center;padding:6px 4px 40px}
+  .fig{flex:0 0 auto;scroll-snap-align:center}
+  .phone{
+    position:relative;width:390px;height:844px;border-radius:52px;background:var(--bg);
+    overflow:hidden;
+    box-shadow:0 0 0 12px var(--frame),0 0 0 13.5px var(--frameEdge),
+               0 34px 70px -22px rgba(0,0,0,.5);
+  }
+  .caption{margin-top:26px;text-align:center}
+  .caption b{display:block;font-size:14px;font-weight:600;letter-spacing:.1px}
+  .caption span{display:block;font-size:12px;color:var(--text2);margin-top:4px}
+
+  /* ---------- status / island / home ---------- */
+  .status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 30px;font-size:15px;font-weight:650;letter-spacing:.2px;z-index:20}
+  .status .sig{display:flex;align-items:center;gap:5px}
+  .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:34px;
+    border-radius:20px;background:#000;z-index:30}
+  .home{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:136px;height:5px;
+    border-radius:3px;background:var(--text);opacity:.9;z-index:26}
+
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column}
+
+  /* ---------- nav ---------- */
+  .nav{height:44px;padding:0 10px;display:flex;align-items:center;justify-content:space-between;
+    position:relative;z-index:12;flex:0 0 auto}
+  .nav.blur{background:var(--nav);backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);box-shadow:inset 0 -.5px 0 var(--sep)}
+  .nav .side{width:74px;display:flex;align-items:center;gap:14px}
+  .nav .side.r{justify-content:flex-end}
+  .back{display:flex;align-items:center;gap:1px;color:var(--blue);font-size:17px;letter-spacing:-.2px}
+  .navtitle{font-size:17px;font-weight:600;letter-spacing:-.2px}
+  .ic{width:24px;height:24px;flex:0 0 auto;color:currentColor}
+  .ic.s{width:20px;height:20px}
+
+  .large{padding:2px 20px 14px;flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between}
+  .large h1{font-size:34px;line-height:41px;font-weight:700;letter-spacing:-.6px}
+  .circlebtn{width:34px;height:34px;border-radius:50%;background:var(--fill);display:flex;
+    align-items:center;justify-content:center;color:var(--text2);margin-top:4px}
+
+  /* ---------- search field ---------- */
+  .field{display:flex;align-items:center;gap:7px;height:36px;padding:0 9px;border-radius:10px;
+    background:var(--fill);color:var(--text2);font-size:16px;flex:0 0 auto}
+  .field .q{color:var(--text);font-size:16px}
+  .fieldwrap{padding:0 16px 4px;flex:0 0 auto}
+
+  /* ---------- section header ---------- */
+  .shead{display:flex;align-items:baseline;justify-content:space-between;
+    padding:20px 20px 7px;font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.3px;flex:0 0 auto}
+  .shead .count{font-weight:500;color:var(--text3);font-variant-numeric:tabular-nums}
+
+  /* ---------- grouped list ---------- */
+  .group{margin:0 16px;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:var(--cardShadow);flex:0 0 auto}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 14px;min-height:44px;position:relative}
+  .row+.row::before{content:"";position:absolute;left:14px;right:0;top:0;height:.5px;background:var(--sep)}
+  .row.tight{padding:9px 14px}
+  .t1{font-size:17px;line-height:22px;letter-spacing:-.1px}
+  .t2{font-size:13px;line-height:17px;color:var(--text2);margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chev{margin-left:auto;color:var(--text3);width:16px;height:16px;flex:0 0 auto}
+  .iconbox{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    color:var(--text2);background:var(--fill);flex:0 0 auto}
+
+  /* ---------- result row ---------- */
+  .thumb{width:44px;height:62px;border-radius:8px;flex:0 0 auto;position:relative;overflow:hidden;
+    box-shadow:0 3px 8px -3px rgba(0,0,0,.35)}
+  .thumb::after,.cover::after{content:"";position:absolute;inset:0;border-radius:inherit;
+    box-shadow:inset 0 0 0 .5px rgba(255,255,255,.22);
+    background:radial-gradient(120% 80% at 18% 0%,rgba(255,255,255,.3),transparent 62%)}
+  .thumb.big{width:52px;height:72px}
+  .cv-a{background:linear-gradient(158deg,#2B5876,#4E4376)}
+  .cv-b{background:linear-gradient(158deg,#F2A65A,#B23A2E)}
+  .cv-c{background:linear-gradient(158deg,#123C3A,#6FA8A0)}
+  .cv-d{background:linear-gradient(158deg,#E7D5BC,#A9764A)}
+  .cv-e{background:linear-gradient(158deg,#3A1C71,#C46B77)}
+  .cv-f{background:linear-gradient(158deg,#0B486B,#E0663A)}
+  .cv-g{background:linear-gradient(158deg,#22283A,#5B6C8F)}
+  .cv-h{background:linear-gradient(158deg,#5C2A2A,#C68B4E)}
+
+  /* ---------- skeleton ---------- */
+  .sk{background:var(--fill);border-radius:5px}
+  .sk.line1{height:12px;width:44%}
+  .sk.line2{height:9px;width:30%;margin-top:7px}
+
+  /* ---------- footnote ---------- */
+  .footnote{text-align:center;font-size:12px;color:var(--text3);margin-top:18px;letter-spacing:.2px;flex:0 0 auto}
+
+  /* ---------- tab bar ---------- */
+  .tabbar{position:absolute;left:0;right:0;bottom:0;height:84px;padding:7px 8px 0;display:flex;z-index:16;
+    background:var(--nav);backdrop-filter:blur(26px) saturate(180%);
+    -webkit-backdrop-filter:blur(26px) saturate(180%);box-shadow:inset 0 .5px 0 var(--sep)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;
+    letter-spacing:.2px;color:var(--text2);font-weight:500}
+  .tab.on{color:var(--blue)}
+  .tab .ic{width:25px;height:25px}
+
+  /* ---------- detail ---------- */
+  .hero{position:relative;height:226px;flex:0 0 auto;overflow:hidden}
+  .hero .art{position:absolute;inset:-60px;
+    background:
+      radial-gradient(58% 52% at 26% 20%, #E9A93F 0%, rgba(233,169,63,0) 62%),
+      radial-gradient(66% 58% at 80% 26%, #B03A33 0%, rgba(176,58,51,0) 64%),
+      radial-gradient(60% 60% at 62% 86%, #2E7D6E 0%, rgba(46,125,110,0) 60%),
+      linear-gradient(158deg,#12243C,#24405E 55%,#0E1A2B);
+    filter:blur(34px) saturate(165%);transform:scale(1.08)}
+  .hero .fade{position:absolute;inset:0;
+    background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,.06) 52%,var(--bg) 100%)}
+  .hero .cover{position:absolute;left:50%;bottom:-58px;transform:translateX(-50%);
+    width:106px;height:150px;border-radius:11px;overflow:hidden;
+    box-shadow:0 22px 46px -14px rgba(0,0,0,.6);
+    background:
+      radial-gradient(120% 84% at 18% 0%, rgba(255,255,255,.38), rgba(255,255,255,0) 58%),
+      radial-gradient(90% 60% at 88% 96%, rgba(233,169,63,.55), rgba(233,169,63,0) 60%),
+      linear-gradient(158deg,#2B5876,#4E4376)}
+  .dtitle{text-align:center;font-size:22px;font-weight:700;letter-spacing:-.4px;padding:64px 28px 0;flex:0 0 auto}
+  .dsub{text-align:center;font-size:13px;color:var(--text2);margin-top:7px;flex:0 0 auto}
+  .btn{display:flex;align-items:center;justify-content:center;gap:7px;height:50px;border-radius:14px;
+    background:var(--blue);color:#fff;font-size:17px;font-weight:600;letter-spacing:-.1px;
+    margin:22px 16px 4px;box-shadow:0 12px 26px -14px rgba(0,122,255,.85);flex:0 0 auto}
+  .chapter-now{color:var(--blue)}
+
+  /* ---------- library ---------- */
+  .seg{display:flex;margin:2px 16px 14px;background:var(--fill);border-radius:9px;padding:2px;flex:0 0 auto}
+  .seg span{flex:1;text-align:center;font-size:13px;font-weight:500;padding:6px 0;border-radius:7px;color:var(--text)}
+  .seg span.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.13)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 12px;padding:0 16px;flex:0 0 auto}
+  .cell .cover{aspect-ratio:2/3;border-radius:10px;overflow:hidden;position:relative;
+    box-shadow:0 6px 14px -8px rgba(0,0,0,.4)}
+  .cell .name{font-size:12px;line-height:16px;margin-top:7px;color:var(--text);
+    display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+  .scroll{flex:1 1 auto;overflow:hidden;position:relative}
+
+  /* ---------- specs ---------- */
+  .specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:16px}
+  .card{background:var(--card);border-radius:20px;padding:22px 24px;box-shadow:var(--cardShadow)}
+  .card h3{font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.4px;margin-bottom:16px}
+  .swatches{display:flex;flex-wrap:wrap;gap:14px}
+  .sw{display:flex;flex-direction:column;gap:7px;font-size:11px;color:var(--text2)}
+  .sw i{width:38px;height:38px;border-radius:10px;display:block;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08)}
+  .scale{display:flex;flex-direction:column;gap:11px}
+  .scale div{display:flex;align-items:baseline;gap:12px}
+  .scale em{font-style:normal;font-size:11px;color:var(--text3);width:66px;flex:0 0 auto;
+    font-variant-numeric:tabular-nums}
+  .notes{list-style:none;display:flex;flex-direction:column;gap:11px;font-size:13px;line-height:20px;color:var(--text)}
+  .notes li{position:relative;padding-left:16px}
+  .notes li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--blue)}
+  .notes li b{font-weight:600}
+  @media (max-width:900px){.page{padding:0 18px}.stage{gap:30px}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="10.6" cy="10.6" r="6.6"/><path d="M15.6 15.6 20.4 20.4"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8.4"/><path d="M12 7.6V12l3.2 1.9"/>
+    </symbol>
+    <symbol id="i-books" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+      <path d="M4 8.2h4.6v11.4H4z"/><path d="M10.4 4.4h4.6v15.2h-4.6z"/><path d="M16.8 9.4h3.2v10.2h-3.2z"/>
+    </symbol>
+    <symbol id="i-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="8.4" r="3.6"/><path d="M4.8 20c1.5-3.5 4.2-5.2 7.2-5.2s5.7 1.7 7.2 5.2"/>
+    </symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M4 8.4h9.2"/><path d="M18.4 8.4H20"/><circle cx="16" cy="8.4" r="2.2"/>
+      <path d="M4 15.6h4.4"/><path d="M13.6 15.6H20"/><circle cx="11.2" cy="15.6" r="2.2"/>
+    </symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 4.6 16.4 12 9 19.4"/>
+    </symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 4.6 7.6 12 15 19.4"/>
+    </symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+      <path d="M6.6 4h10.8a.9.9 0 0 1 .9.9V21l-6.3-4.1L5.7 21V4.9a.9.9 0 0 1 .9-.9Z"/>
+    </symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3.4v10.2"/><path d="M8.4 6.8 12 3.2l3.6 3.6"/>
+      <path d="M6.2 11.4v8.2a.9.9 0 0 0 .9.9h9.8a.9.9 0 0 0 .9-.9v-8.2"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="12" r="8.4"/><path d="M9.4 9.4 14.6 14.6M14.6 9.4 9.4 14.6"/>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M8.2 5.4a1 1 0 0 1 1.53-.85l8.1 5.6a1 1 0 0 1 0 1.7l-8.1 5.6A1 1 0 0 1 8.2 16.6z"/>
+    </symbol>
+    <symbol id="i-signal" viewBox="0 0 16 12" fill="currentColor">
+      <rect x="0" y="7.4" width="3" height="4.2" rx="1"/><rect x="4.3" y="5.4" width="3" height="6.2" rx="1"/>
+      <rect x="8.6" y="3.1" width="3" height="8.5" rx="1"/><rect x="12.9" y="0.8" width="3" height="10.8" rx="1"/>
+    </symbol>
+    <symbol id="i-wifi" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M1.1 4.2a10.2 10.2 0 0 1 13.8 0"/><path d="M3.7 6.9a6.4 6.4 0 0 1 8.6 0"/>
+      <circle cx="8" cy="10.2" r="1.1" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-batt" viewBox="0 0 16 12" fill="none">
+      <rect x="0.6" y="0.9" width="12.6" height="10.2" rx="3" stroke="currentColor" stroke-width="1" opacity=".38"/>
+      <rect x="2.1" y="2.4" width="9.6" height="7.2" rx="2" fill="currentColor"/>
+      <path d="M14.6 4.2v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".38"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="page">
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark"></div>
+      <div>
+        <h1>Comic Book <span>/ UI 风格提案 v1</span></h1>
+        <p>基于当前分支的聚合搜索流程重绘 · 极简 · iOS 视觉语汇</p>
+      </div>
+    </div>
+    <div class="switch" id="switch">
+      <button data-mode="light" class="on">浅色</button>
+      <button data-mode="dark">深色</button>
+    </div>
+  </div>
+
+  <div class="stage">
+
+    <!-- ========== 1. 搜索 ========== -->
+    <figure class="fig">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="status">
+          <span>9:41</span>
+          <span class="sig">
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-signal"/></svg>
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-wifi"/></svg>
+            <svg class="ic" style="width:16px;height:12px"><use href="#i-batt"/></svg>
+          </span>
+        </div>
+
+        <div class="screen" style="padding-top:54px">
+          <div class="large">
+            <h1>搜索</h1>
+            <div class="circlebtn"><svg class="ic s"><use href="#i-sliders"/></svg></div>
+          </div>
+          <div class="fieldwrap">
+            <div class="field" style="height:38px">
+              <svg class="ic s" style="color:var(--text2)"><use href="#i-search"/></svg>
+              <span class="q">海贼王</span>
+              <svg class="ic s" style="margin-left:auto;color:var(--text3)"><use href="#i-x"/></svg>
+            </div>
+          </div>
+
+          <div class="shead">最近查看</div>
+          <div class="group">
+            <div class="row tight">
+              <div class="thumb cv-a"></div>
+              <div style="min-width:0">
+                <div class="t1" style="font-size:15px">海贼王</div>
+                <div class="t2">拷贝漫画 · 第 1128 话</div>
+              </div>
+              <svg class="chev"><use href="#i-chev-r"/></svg>
+            </div>
+            <div class="row tight">
+              <div class="thumb cv-b"></div>
+              <div style="min-width:0">
+                <div class="t1" style="font-size:15px">咒术回战</div>
+                <div class="t2">包子漫画 · 第 271 话</div>
+              </div>
+              <svg class="chev"><use href="#i-chev-r"/></svg>
+            </div>
+            <div class="row tight">
+              <div class="thumb cv-c"></div>
+              <div style="min-width:0">
+                <div class="t1" style="font-size:15px">葬送的芙莉莲</div>
+                <div class="t2">动漫屋 · 第 138 话</div>
+              </div>
+              <svg class="chev"><use href="#i-chev-r"/></svg>
+            </div>
+            <div class="row tight">
+              <div class="thumb cv-d"></div>
+              <div style="min-width:0">
+                <div class="t1" style="font-size:15px">迷宫饭</div>
+                <div class="t2">拷贝漫画 · 第 97 话</div>
+              </div>
+              <svg class="chev"><use href="#i-chev-r"/></svg>
+            </div>
+            <div class="row tight">
+              <div class="thumb cv-e"></div>
+              <div style="min-width:0">
+                <div class="t1" style="font-size:15px">电锯人</div>
+                <div class="t2">包子漫画 · 第 208 话</div>
+              </div>
+              <svg class="chev"><use href="#i-chev-r"/></svg>
+            </div>
+            <div class="row tight">
+              <div class="thumb cv-g"></div>
+              <div style="min-width:0">
+                <div class="t1" style="font-size:15px">钢之炼金术师</div>
+                <div class="t2">动漫屋 · 第 116 话</div>
+              </div>
+              <svg class="chev"><use href="#i-chev-r"/></svg>
+            </div>
+          </div>
+
+          <div class="footnote">3 个线路 · 刚刚同步</div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab"><svg class="ic"><use href="#i-books"/></svg><span>书架</span></div>
+          <div class="tab on"><svg class="ic"><use href="#i-search"/></svg><span>搜索</span></div>
+          <div class="tab"><svg class="ic"><use href="#i-clock"/></svg><span>历史</span></div>
+          <div class="tab"><svg class="ic"><use href="#i-person"/></svg><span>我的</span></div>
+        </div>
+        <div class="home"></div>
+      </div>
+      <figcaption class="caption"><b>搜索</b><span>一个输入框 + 最近查看，去掉全部说明段落</span></figcaption>
+    </figure>
+
+    <!-- ========== 2. 搜索结果 ========== -->
+    <figure class="fig">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="status">
+          <span>9:41</span>
+          <span class="sig">
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-signal"/></svg>
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-wifi"/></svg>
+            <svg class="ic" style="width:16px;height:12px"><use href="#i-batt"/></svg>
+          </span>
+        </div>
+
+        <div class="screen" style="padding-top:54px">
+          <div class="nav blur">
+            <div class="side" style="width:auto">
+              <span class="back"><svg class="ic s"><use href="#i-chev-l"/></svg>搜索</span>
+            </div>
+            <span class="navtitle">海贼王</span>
+            <div class="side r"><svg class="ic s"><use href="#i-sliders"/></svg></div>
+          </div>
+
+          <div class="scroll" style="padding-top:4px">
+            <div class="shead" style="padding-top:12px">拷贝漫画<span class="count">12</span></div>
+            <div class="group">
+              <div class="row">
+                <div class="thumb cv-a"></div>
+                <div style="min-width:0">
+                  <div class="t1">海贼王</div>
+                  <div class="t2">更新至 第 1128 话</div>
+                </div>
+                <svg class="chev"><use href="#i-chev-r"/></svg>
+              </div>
+              <div class="row">
+                <div class="thumb cv-a" style="filter:hue-rotate(24deg)"></div>
+                <div style="min-width:0">
+                  <div class="t1">航海王</div>
+                  <div class="t2">更新至 第 1128 话</div>
+                </div>
+                <svg class="chev"><use href="#i-chev-r"/></svg>
+              </div>
+              <div class="row">
+                <div class="thumb cv-g"></div>
+                <div style="min-width:0">
+                  <div class="t1">ONE PIECE 海贼王</div>
+                  <div class="t2">更新至 第 1102 话</div>
+                </div>
+                <svg class="chev"><use href="#i-chev-r"/></svg>
+              </div>
+            </div>
+
+            <div class="shead">包子漫画<span class="count">9</span></div>
+            <div class="group">
+              <div class="row">
+                <div class="thumb cv-b"></div>
+                <div style="min-width:0">
+                  <div class="t1">海贼王</div>
+                  <div class="t2">更新至 第 1126 话</div>
+                </div>
+                <svg class="chev"><use href="#i-chev-r"/></svg>
+              </div>
+              <div class="row">
+                <div class="thumb cv-h"></div>
+                <div style="min-width:0">
+                  <div class="t1">海贼王 剧场版</div>
+                  <div class="t2">更新至 第 34 话</div>
+                </div>
+                <svg class="chev"><use href="#i-chev-r"/></svg>
+              </div>
+            </div>
+
+            <div class="shead">动漫屋<span class="count" style="color:var(--text2);font-weight:500">搜索中</span></div>
+            <div class="group">
+              <div class="row">
+                <div class="thumb sk" style="border-radius:8px"></div>
+                <div style="min-width:0;flex:1">
+                  <div class="sk line1"></div>
+                  <div class="sk line2"></div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="thumb sk" style="border-radius:8px"></div>
+                <div style="min-width:0;flex:1">
+                  <div class="sk line1" style="width:56%"></div>
+                  <div class="sk line2" style="width:24%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="home"></div>
+      </div>
+      <figcaption class="caption"><b>搜索结果</b><span>线路进入分组标题，行内只留标题与话数</span></figcaption>
+    </figure>
+
+    <!-- ========== 3. 漫画详情 ========== -->
+    <figure class="fig">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="status">
+          <span>9:41</span>
+          <span class="sig">
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-signal"/></svg>
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-wifi"/></svg>
+            <svg class="ic" style="width:16px;height:12px"><use href="#i-batt"/></svg>
+          </span>
+        </div>
+
+        <div class="screen">
+          <div class="hero">
+            <div class="art"></div>
+            <div class="fade"></div>
+            <div class="cover"></div>
+          </div>
+
+          <div style="position:absolute;top:54px;left:0;right:0;z-index:12;height:44px;
+                      display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+            <span class="back" style="color:#F2F2F7;text-shadow:0 1px 6px rgba(0,0,0,.35)">
+              <svg class="ic s"><use href="#i-chev-l"/></svg>
+            </span>
+            <span style="display:flex;gap:16px;color:#F2F2F7;filter:drop-shadow(0 1px 4px rgba(0,0,0,.32))">
+              <svg class="ic s"><use href="#i-bookmark"/></svg>
+              <svg class="ic s"><use href="#i-share"/></svg>
+            </span>
+          </div>
+
+          <div class="dtitle">海贼王</div>
+          <div class="dsub">尾田荣一郎 · 连载中 · 共 1128 话</div>
+          <div class="btn"><svg class="ic s" style="color:#fff"><use href="#i-play"/></svg>继续阅读 · 第 1128 话</div>
+
+          <div class="shead">章节<span class="count">按最新</span></div>
+          <div class="group" style="margin-bottom:24px">
+            <div class="row">
+              <div style="min-width:0">
+                <div class="t1 chapter-now">第 1128 话</div>
+              </div>
+              <span class="t2" style="margin-left:auto;margin-top:0">今天</span>
+            </div>
+            <div class="row">
+              <div class="t1">第 1127 话</div>
+              <span class="t2" style="margin-left:auto;margin-top:0">11月16日</span>
+            </div>
+            <div class="row">
+              <div class="t1">第 1126 话</div>
+              <span class="t2" style="margin-left:auto;margin-top:0">11月9日</span>
+            </div>
+            <div class="row">
+              <div class="t1">第 1125 话</div>
+              <span class="t2" style="margin-left:auto;margin-top:0">11月2日</span>
+            </div>
+            <div class="row">
+              <div class="t1">第 1124 话</div>
+              <span class="t2" style="margin-left:auto;margin-top:0">10月26日</span>
+            </div>
+            <div class="row">
+              <div class="t1">第 1123 话</div>
+              <span class="t2" style="margin-left:auto;margin-top:0">10月19日</span>
+            </div>
+            <div class="row">
+              <div class="t1">第 1122 话</div>
+              <span class="t2" style="margin-left:auto;margin-top:0">10月12日</span>
+            </div>
+            <div class="row">
+              <div class="t1">第 1121 话</div>
+              <span class="t2" style="margin-left:auto;margin-top:0">10月5日</span>
+            </div>
+          </div>
+        </div>
+        <div class="home"></div>
+      </div>
+      <figcaption class="caption"><b>漫画详情</b><span>封面主视觉 + 单一主操作，无简介段落</span></figcaption>
+    </figure>
+
+    <!-- ========== 4. 书架 ========== -->
+    <figure class="fig">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="status">
+          <span>9:41</span>
+          <span class="sig">
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-signal"/></svg>
+            <svg class="ic" style="width:15px;height:11px"><use href="#i-wifi"/></svg>
+            <svg class="ic" style="width:16px;height:12px"><use href="#i-batt"/></svg>
+          </span>
+        </div>
+
+        <div class="screen" style="padding-top:54px">
+          <div class="large" style="padding-bottom:4px">
+            <h1>书架</h1>
+            <div class="circlebtn"><svg class="ic s"><use href="#i-sliders"/></svg></div>
+          </div>
+          <div class="seg"><span class="on">全部</span><span>未读</span><span>已下载</span></div>
+
+          <div class="scroll">
+            <div class="grid">
+              <div class="cell"><div class="cover cv-a"></div><div class="name">海贼王</div></div>
+              <div class="cell"><div class="cover cv-b"></div><div class="name">咒术回战</div></div>
+              <div class="cell"><div class="cover cv-c"></div><div class="name">葬送的芙莉莲</div></div>
+              <div class="cell"><div class="cover cv-d"></div><div class="name">迷宫饭</div></div>
+              <div class="cell"><div class="cover cv-e"></div><div class="name">电锯人</div></div>
+              <div class="cell"><div class="cover cv-f"></div><div class="name">一拳超人</div></div>
+              <div class="cell"><div class="cover cv-g"></div><div class="name">钢之炼金术师</div></div>
+              <div class="cell"><div class="cover cv-h"></div><div class="name">夏日重现</div></div>
+              <div class="cell"><div class="cover cv-a" style="filter:hue-rotate(200deg)"></div><div class="name">蓝色时期</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab on"><svg class="ic"><use href="#i-books"/></svg><span>书架</span></div>
+          <div class="tab"><svg class="ic"><use href="#i-search"/></svg><span>搜索</span></div>
+          <div class="tab"><svg class="ic"><use href="#i-clock"/></svg><span>历史</span></div>
+          <div class="tab"><svg class="ic"><use href="#i-person"/></svg><span>我的</span></div>
+        </div>
+        <div class="home"></div>
+      </div>
+      <figcaption class="caption"><b>书架</b><span>分段控件切换筛选，封面下只留书名</span></figcaption>
+    </figure>
+
+  </div>
+
+  <!-- ========== 规范 ========== -->
+  <section class="specs">
+    <div class="card">
+      <h3>颜色 TOKEN</h3>
+      <div class="swatches">
+        <div class="sw"><i style="background:#F2F2F7"></i>底 #F2F2F7</div>
+        <div class="sw"><i style="background:#FFFFFF"></i>卡 #FFFFFF</div>
+        <div class="sw"><i style="background:#007AFF"></i>强调 #007AFF</div>
+        <div class="sw"><i style="background:#8A8A8E"></i>次文本 #8A8A8E</div>
+        <div class="sw"><i style="background:#0A0A0B"></i>主文本 #0A0A0B</div>
+        <div class="sw"><i style="background:#1C1C1E"></i>深色卡 #1C1C1E</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>字号层级</h3>
+      <div class="scale">
+        <div><em>34 / 700</em><span style="font-size:26px;font-weight:700;letter-spacing:-.6px">页面大标题</span></div>
+        <div><em>22 / 700</em><span style="font-size:20px;font-weight:700">详情标题</span></div>
+        <div><em>17 / 400</em><span style="font-size:17px">列表正文</span></div>
+        <div><em>13 / 400</em><span style="font-size:13px;color:var(--text2)">次要状态（话数 / 线路 / 时间）</span></div>
+        <div><em>12 / 400</em><span style="font-size:12px;color:var(--text3)">页脚说明（仅一处）</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>改版要点</h3>
+      <ul class="notes">
+        <li><b>删文案</b>：说明段落全部移除，只保留状态信息（线路数、话数、时间）。</li>
+        <li><b>线路只出现一次</b>：作为分组标题（吸顶），行内不再重复标签。</li>
+        <li><b>卡片墙 → 内嵌分组列表</b>：白色圆角容器 + 0.5pt 发丝线，靠留白组织信息。</li>
+        <li><b>一屏一个主操作</b>：搜索框 / 继续阅读，其余降为图标。</li>
+        <li><b>统一几何</b>：列表 14pt 圆角、封面 8–10pt、点击区 ≥44pt。</li>
+        <li><b>材质</b>：导航与 Tab 用毛玻璃，深浅色共用一套 token。</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  const sw = document.getElementById('switch');
+  sw.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const mode = btn.dataset.mode;
+    document.documentElement.classList.toggle('dark', mode === 'dark');
+    sw.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === btn));
+  });
+</script>
+</body>
+</html>

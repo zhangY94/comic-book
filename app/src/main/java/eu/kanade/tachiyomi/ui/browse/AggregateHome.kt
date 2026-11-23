@@ -1,22 +1,21 @@
 package eu.kanade.tachiyomi.ui.browse
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,19 +24,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import eu.kanade.presentation.theme.AppleFootnote
+import eu.kanade.presentation.theme.AppleGroupRow
+import eu.kanade.presentation.theme.AppleInlineTextField
+import eu.kanade.presentation.theme.AppleLargeTitle
+import eu.kanade.presentation.theme.AppleMetrics
+import eu.kanade.presentation.theme.AppleSearchField
+import eu.kanade.presentation.theme.applePalette
 import eu.kanade.tachiyomi.extension.AggregateCatalog
 import eu.kanade.tachiyomi.extension.AggregateCatalogPolicy
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import kotlinx.coroutines.launch
 import mihon.app.di.appGraph
+import mihon.icons.materialsymbols.MaterialSymbols
+import mihon.icons.materialsymbols.rounded.Settings
+import mihon.icons.materialsymbols.rounded.Sync
 import java.text.DateFormat
 import java.util.Date
 import kotlin.coroutines.cancellation.CancellationException
@@ -49,6 +60,8 @@ internal fun AggregateHome() {
     val preferences = graph.sourcePreferences
     val scope = rememberCoroutineScope()
     val navigator = LocalNavigator.currentOrThrow
+    val palette = applePalette()
+
     var address by rememberSaveable { mutableStateOf(preferences.aggregateIndexUrl.get()) }
     var query by rememberSaveable { mutableStateOf("") }
     var configuring by rememberSaveable { mutableStateOf(address.isBlank()) }
@@ -66,6 +79,7 @@ internal fun AggregateHome() {
             count = result.sources
             lastSync = preferences.aggregateLastSync.get()
             configuring = false
+            message = ""
         } catch (error: CancellationException) {
             throw error
         } catch (error: Exception) {
@@ -97,51 +111,158 @@ internal fun AggregateHome() {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = 28.dp),
     ) {
-        Spacer(Modifier.height(16.dp))
-        Text("漫画聚合搜索", style = MaterialTheme.typography.headlineMedium)
-        Text("输入书名，同时搜索多个图源，再选择最合适的来源阅读。", style = MaterialTheme.typography.bodyLarge)
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("漫画名称") },
-            placeholder = { Text("输入你想看的漫画") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { search() }),
+        Spacer(Modifier.height(6.dp))
+        AppleLargeTitle(
+            title = "搜索",
+            action = {
+                IconButton(onClick = { configuring = !configuring }, enabled = !running) {
+                    Icon(
+                        imageVector = MaterialSymbols.Rounded.Settings,
+                        contentDescription = "图源订阅设置",
+                        tint = palette.secondaryLabel,
+                    )
+                }
+            },
         )
-        Button(onClick = { search() }, enabled = query.isNotBlank() && count > 0 && !running, modifier = Modifier.fillMaxWidth()) {
-            Text("搜索全部图源")
-        }
-        Text(if (count > 0) "已就绪 $count 个中文图源 · 搜索结果按来源展示" else "首次使用：添加一次图源地址，即可自动准备全部图源")
-        if (running) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        if (message.isNotBlank()) {
-            Text(message, color = if (failure) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        if (lastSync > 0) Text("上次同步：${DateFormat.getDateTimeInstance().format(Date(lastSync))}", style = MaterialTheme.typography.bodySmall)
-        TextButton(onClick = { configuring = !configuring }, enabled = !running) {
-            Text(if (configuring) "收起订阅设置" else "图源订阅设置")
-        }
-        if (configuring) {
-            Text("统一图源地址", style = MaterialTheme.typography.titleMedium)
-            OutlinedTextField(
-                value = address,
-                onValueChange = { address = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("图源订阅地址") },
-                placeholder = { Text("粘贴你的图源地址") },
-                enabled = !running,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = AppleMetrics.SectionHorizontalPadding,
+                    end = AppleMetrics.SectionHorizontalPadding,
+                    top = 14.dp,
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            AppleSearchField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier.weight(1f),
+                placeholder = "漫画名、作者",
+                onSearch = { search() },
             )
-            Text("只添加你信任的订阅。保存后自动准备图源，无需逐个安装；以后每天自动同步。", style = MaterialTheme.typography.bodySmall)
+            if (query.isNotBlank()) {
+                Text(
+                    text = "搜索",
+                    modifier = Modifier
+                        .clickable(enabled = count > 0 && !running) { search() }
+                        .padding(vertical = 6.dp),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (count > 0 && !running) palette.tint else palette.tertiaryLabel,
+                )
+            }
         }
-        Button(onClick = { scope.launch { synchronize() } }, enabled = address.isNotBlank() && !running) {
-            Text(if (count == 0) "保存并准备全部图源" else "立即同步图源")
+
+        if (running) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = AppleMetrics.SectionHorizontalPadding,
+                        end = AppleMetrics.SectionHorizontalPadding,
+                        top = 16.dp,
+                    )
+                    .height(2.dp),
+                color = palette.tint,
+                trackColor = palette.separator,
+            )
         }
-        Text("图片由手机直接加载。某个来源失效或较慢时，返回搜索结果选择其他来源即可。", style = MaterialTheme.typography.bodySmall)
+
+        Spacer(Modifier.height(18.dp))
+        AppleFootnote(
+            text = statusLine(count = count, running = running, lastSync = lastSync),
+            modifier = Modifier.padding(horizontal = AppleMetrics.SectionHorizontalPadding),
+            textAlign = TextAlign.Start,
+        )
+
+        if (failure && message.isNotBlank()) {
+            Text(
+                text = message,
+                modifier = Modifier.padding(
+                    start = AppleMetrics.SectionHorizontalPadding,
+                    end = AppleMetrics.SectionHorizontalPadding,
+                    top = 10.dp,
+                ),
+                fontSize = 13.sp,
+                color = palette.error,
+            )
+        }
+
+        if (configuring) {
+            Spacer(Modifier.height(AppleMetrics.SectionTopPadding))
+            Text(
+                text = "图源订阅",
+                modifier = Modifier.padding(
+                    start = AppleMetrics.SectionHorizontalPadding,
+                    bottom = 7.dp,
+                ),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = palette.secondaryLabel,
+            )
+            Column(modifier = Modifier.padding(horizontal = AppleMetrics.PageHorizontalPadding)) {
+                val canSave = address.isNotBlank() && !running
+                val save: () -> Unit = { scope.launch { synchronize() } }
+                AppleGroupRow(isFirst = true, isLast = false) {
+                    AppleInlineTextField(
+                        value = address,
+                        onValueChange = { address = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = "粘贴图源地址",
+                    )
+                }
+                AppleGroupRow(
+                    isFirst = false,
+                    isLast = true,
+                    onClick = if (canSave) save else null,
+                ) {
+                    Text(
+                        text = "保存并准备图源",
+                        modifier = Modifier.weight(1f),
+                        fontSize = 16.sp,
+                        color = if (canSave) palette.tint else palette.tertiaryLabel,
+                    )
+                    Icon(
+                        imageVector = MaterialSymbols.Rounded.Sync,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = if (canSave) palette.tint else palette.tertiaryLabel,
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+                AppleFootnote(
+                    text = "只需一次，之后每天自动同步",
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    textAlign = TextAlign.Start,
+                )
+            }
+        }
+    }
+}
+
+private fun statusLine(count: Int, running: Boolean, lastSync: Long): String {
+    if (running) return "正在准备图源…"
+    if (count == 0) return "尚未准备图源"
+    val synced = relativeTime(lastSync) ?: return "$count 个线路"
+    return "$count 个线路 · $synced"
+}
+
+private fun relativeTime(timestamp: Long): String? {
+    if (timestamp <= 0L) return null
+    val delta = System.currentTimeMillis() - timestamp
+    return when {
+        delta < 60_000L -> "刚刚同步"
+        delta < 3_600_000L -> "${delta / 60_000L} 分钟前同步"
+        delta < 86_400_000L -> "${delta / 3_600_000L} 小时前同步"
+        delta < 7 * 86_400_000L -> "${delta / 86_400_000L} 天前同步"
+        else -> DateFormat.getDateInstance(DateFormat.SHORT).format(Date(timestamp))
     }
 }
