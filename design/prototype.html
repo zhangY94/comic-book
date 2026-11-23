@@ -197,6 +197,13 @@
   .seg button{flex:1;border:0;background:transparent;font-family:inherit;font-size:13px;font-weight:500;color:var(--label);
     padding:6px 0;border-radius:7px;cursor:pointer}
   .seg button.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.13)}
+  .libbar{display:flex;align-items:center;gap:2px;height:56px;padding:0 6px 0 18px}
+  .libbar-title{flex:1;min-width:0;font-size:22px;font-weight:700;letter-spacing:-.4px;display:flex;align-items:center;gap:8px}
+  .libcount{font-size:13px;font-weight:600;color:var(--label2);background:var(--fill);border-radius:9px;padding:2px 7px}
+  .cbadge{position:absolute;top:5px;left:5px;font-size:10px;line-height:14px;font-weight:650;padding:1px 5px;
+    border-radius:5px;color:#fff;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+  .cbadge.hot{background:var(--red);box-shadow:0 2px 6px -2px rgba(255,59,48,.7)}
+  .cbadge.cold{background:rgba(0,0,0,.42);backdrop-filter:blur(4px)}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 12px;padding:0 16px}
   .cell .cover{aspect-ratio:2/3;border-radius:10px;position:relative;overflow:hidden;box-shadow:0 6px 14px -8px rgba(0,0,0,.4);cursor:pointer}
   .cell .name{font-size:12px;line-height:16px;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -270,6 +277,8 @@
   <symbol id="i-signal" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7.4" width="3" height="4.2" rx="1"/><rect x="4.3" y="5.4" width="3" height="6.2" rx="1"/><rect x="8.6" y="3.1" width="3" height="8.5" rx="1"/><rect x="12.9" y="0.8" width="3" height="10.8" rx="1"/></symbol>
   <symbol id="i-wifi" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1.1 4.2a10.2 10.2 0 0 1 13.8 0"/><path d="M3.7 6.9a6.4 6.4 0 0 1 8.6 0"/><circle cx="8" cy="10.2" r="1.1" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-batt" viewBox="0 0 16 12" fill="none"><rect x=".6" y=".9" width="12.6" height="10.2" rx="3" stroke="currentColor" opacity=".38"/><rect x="2.1" y="2.4" width="9.6" height="7.2" rx="2" fill="currentColor"/><path d="M14.6 4.2v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".38"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16"/><path d="M7 12h10"/><path d="M10 17h4"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.6" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18.4" r="1.7"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="M8 10.5 12 14.5l4-4"/><path d="M5 18.5h14"/></symbol>
   <symbol id="i-public" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.4"/><path d="M3.6 12h16.8"/><path d="M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4S9.6 6 12 3.6Z"/></symbol>
   <symbol id="i-storage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="6.4" rx="7.4" ry="2.8"/><path d="M4.6 6.4v11.2c0 1.6 3.3 2.8 7.4 2.8s7.4-1.2 7.4-2.8V6.4"/><path d="M4.6 12c0 1.6 3.3 2.8 7.4 2.8s7.4-1.2 7.4-2.8"/></symbol>
@@ -362,8 +371,19 @@
     <!-- ================= 书架 ================= -->
     <section class="screen" id="library">
       <div class="scroll">
-        <div class="large-row"><h1>书架</h1></div>
-        <div class="seg" style="margin-top:14px">
+        <div class="libbar">
+          <div class="libbar-title">书架<span class="libcount">42</span></div>
+          <button class="iconbtn" onclick="goTab('home')" title="搜索漫画资源">
+            <svg width="22" height="22"><use href="#i-search"/></svg>
+          </button>
+          <button class="iconbtn" title="筛选">
+            <svg width="22" height="22"><use href="#i-filter"/></svg>
+          </button>
+          <button class="iconbtn" title="更多">
+            <svg width="22" height="22"><use href="#i-more"/></svg>
+          </button>
+        </div>
+        <div class="seg" style="margin-top:10px">
           <button class="on" data-filter="all">全部</button>
           <button data-filter="unread">未读</button>
           <button data-filter="down">已下载</button>
@@ -477,8 +497,8 @@
   </div>
 
   <div class="tabbar" id="tabbar">
-    <button class="tab" data-tab="library"><svg width="25" height="25"><use href="#i-books"/></svg><span>书架</span></button>
-    <button class="tab on" data-tab="home"><svg width="25" height="25"><use href="#i-search"/></svg><span>搜索</span></button>
+    <button class="tab on" data-tab="library"><svg width="25" height="25"><use href="#i-books"/></svg><span>书架</span></button>
+    <button class="tab" data-tab="home"><svg width="25" height="25"><use href="#i-search"/></svg><span>搜索</span></button>
     <button class="tab" data-tab="history"><svg width="25" height="25"><use href="#i-clock"/></svg><span>历史</span></button>
     <button class="tab" data-tab="more"><svg width="25" height="25"><use href="#i-person"/></svg><span>我的</span></button>
   </div>
@@ -501,10 +521,11 @@
       <h2>可以这样试</h2>
     </div>
     <div class="tip">
-      <b>1. 搜索</b>：在输入框输入任意字（或回车），看多线路结果如何分批出现。<br>
-      <b>2. 滚动</b>：结果页向下滑，线路标题会吸顶。<br>
-      <b>3. 详情</b>：点任一结果进入详情，点「继续阅读」看阅读器浮层（点屏幕中间可收起工具栏）。<br>
-      <b>4. 齿轮</b>：首页右上角展开图源订阅面板。
+      <b>1. 书架</b>：有更新的作品已置顶并标红，角标就是「更新到第几话」。<br>
+      <b>2. 搜索</b>：点书架右上角的放大镜（或底部第二个 Tab），输入任意字看多线路结果分批出现。<br>
+      <b>3. 滚动</b>：结果页向下滑，线路标题会吸顶。<br>
+      <b>4. 详情</b>：点任一结果进入详情，点「继续阅读」看阅读器浮层（点屏幕中间可收起工具栏）。<br>
+      <b>5. 齿轮</b>：搜索页右上角展开图源订阅面板。
     </div>
   </div>
 
@@ -530,12 +551,21 @@ const SOURCES = [
     rows:[['海贼王','第 1120 话','cv6'],['ONE PIECE','第 1098 话','cv2'],['海贼王 剧场版','第 31 话','cv7']] },
 ];
 
-const LIB = [['海贼王','cv1'],['咒术回战','cv2'],['葬送的芙莉莲','cv3'],['迷宫饭','cv4'],['电锯人','cv5'],
-             ['一拳超人','cv6'],['钢之炼金术师','cv7'],['夏日重现','cv8'],['蓝色时期','cv2']];
+const LIB = [
+  { n:'海贼王', cv:'cv1', total:1128, unread:3 },
+  { n:'一人之下', cv:'cv5', total:1002, unread:12 },
+  { n:'电锯人', cv:'cv6', total:208, unread:1 },
+  { n:'咒术回战', cv:'cv2', total:271, unread:0 },
+  { n:'葬送的芙莉莲', cv:'cv3', total:138, unread:0 },
+  { n:'迷宫饭', cv:'cv4', total:97, unread:0 },
+  { n:'一拳超人', cv:'cv7', total:247, unread:0 },
+  { n:'钢之炼金术师', cv:'cv8', total:116, unread:0 },
+  { n:'夏日重现', cv:'cv2', total:139, unread:0 },
+];
 
 /* ---------------- 路由 ---------------- */
 const ROOTS = ['home','library','history','more'];
-let stack = ['home'];
+let stack = ['library'];
 
 function isRoot(id){ return ROOTS.indexOf(id) >= 0; }
 
@@ -657,11 +687,17 @@ function openDetail(title, chapter, cv){
 
 /* ---------------- 书架 ---------------- */
 function renderGrid(filter){
-  const list = filter === 'unread' ? LIB.slice(0,6) : filter === 'down' ? LIB.slice(2,5) : LIB;
-  document.getElementById('grid').innerHTML = list.map(([n,cv])=>`
+  let list = LIB.slice();
+  if (filter === 'unread') list = list.filter(x => x.unread > 0);
+  if (filter === 'down') list = list.slice(0, 3);
+  // 有更新的置顶，其余保持原顺序
+  list.sort((a, b) => (b.unread > 0) - (a.unread > 0));
+  document.getElementById('grid').innerHTML = list.map(x => `
     <div class="cell">
-      <div class="cover ${cv}" onclick="openDetail('${n}','第 1 话','${cv}')"></div>
-      <div class="name">${n}</div>
+      <div class="cover ${x.cv}" onclick="openDetail('${x.n}','第 ${x.total} 话','${x.cv}')">
+        <span class="cbadge ${x.unread > 0 ? 'hot' : 'cold'}">${x.unread > 0 ? '更新 ' : ''}${x.total}</span>
+      </div>
+      <div class="name">${x.n}</div>
     </div>`).join('');
 }
 renderGrid('all');
@@ -709,11 +745,11 @@ function setDark(on){
     if (el) el.classList.toggle('on', on);
   });
 }
-document.getElementById('swDark').onclick = ()=> setDark(!document.documentElement.classList.contains('dark'));
-document.getElementById('swDark2').onclick = ()=> setDark(!document.documentElement.classList.contains('dark'));
+const swMain = document.getElementById('swDark2');
+if (swMain) swMain.onclick = ()=> setDark(!document.documentElement.classList.contains('dark'));
 
 function resetAll(){
-  stack = ['home']; render();
+  stack = ['library']; render();
   q.value=''; q.dispatchEvent(new Event('input'));
   document.getElementById('config').hidden = true;
   document.getElementById('groups').innerHTML = '';

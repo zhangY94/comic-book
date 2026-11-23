@@ -824,7 +824,13 @@ class LibraryViewModel(
         }
 
         fun getItemsForCategory(category: Category): List<LibraryItem> {
-            return groupedFavorites[category].orEmpty().mapNotNull { libraryData.favoritesById[it] }
+            val items = groupedFavorites[category].orEmpty().mapNotNull { libraryData.favoritesById[it] }
+            // Entries that gained new chapters float to the top, most recently updated first.
+            // sortedWith keeps the user's own sort order inside both groups.
+            return items.sortedWith(
+                compareByDescending<LibraryItem> { it.unreadCount > 0 }
+                    .thenByDescending { it.libraryManga.latestUpload },
+            )
         }
 
         fun getItemCountForCategory(category: Category): Int? {

@@ -55,7 +55,10 @@ internal fun LibraryList(
                 ),
                 badge = {
                     DownloadsBadge(count = libraryItem.badges.downloadCount)
-                    UnreadBadge(count = libraryItem.badges.unreadCount)
+                    ChapterBadge(
+                        totalChapters = libraryItem.libraryManga.totalChapters,
+                        unreadCount = libraryItem.badges.unreadCount,
+                    )
                     LanguageBadge(
                         isLocal = libraryItem.badges.isLocal,
                         sourceLanguage = libraryItem.badges.sourceLanguage,

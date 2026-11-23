@@ -27,6 +27,21 @@ internal fun UnreadBadge(count: Long) {
     }
 }
 
+/**
+ * Chapter badge on a library cover: shows how far the series is available and turns red
+ * as soon as the entry has chapters that were added since it was last read.
+ */
+@Composable
+internal fun ChapterBadge(totalChapters: Long, unreadCount: Long) {
+    if (totalChapters <= 0) return
+    val hasUpdate = unreadCount > 0
+    Badge(
+        text = if (hasUpdate) "更新 $totalChapters" else "$totalChapters",
+        color = if (hasUpdate) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.surfaceVariant,
+        textColor = if (hasUpdate) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
 @Composable
 internal fun LanguageBadge(
     isLocal: Boolean,
@@ -54,6 +69,7 @@ private fun BadgePreview() {
         Column {
             DownloadsBadge(count = 10)
             UnreadBadge(count = 10)
+            ChapterBadge(totalChapters = 128, unreadCount = 3)
             LanguageBadge(isLocal = true, sourceLanguage = "EN")
             LanguageBadge(isLocal = false, sourceLanguage = "EN")
         }

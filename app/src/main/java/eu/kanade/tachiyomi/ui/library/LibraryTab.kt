@@ -36,6 +36,7 @@ import eu.kanade.presentation.more.onboarding.GETTING_STARTED_URL
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateWorker
+import eu.kanade.tachiyomi.extension.AggregateCatalogPolicy
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -134,6 +135,9 @@ data object LibraryTab : Tab {
                                 )
                             }
                         }
+                    },
+                    onClickSearch = {
+                        navigator.push(GlobalSearchScreen("", AggregateCatalogPolicy.SEARCH_FILTER))
                     },
                     searchQuery = state.searchQuery,
                     onSearchQueryChange = viewModel::search,
